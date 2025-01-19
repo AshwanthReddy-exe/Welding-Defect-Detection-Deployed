@@ -56,7 +56,6 @@ class CNNModel(nn.Module):
 
 # Load the trained model
 model = CNNModel()
-# model.load_state_dict(torch.load("model.pth", weights_only=True))
 model.load_state_dict(torch.load("model.pth", map_location=torch.device('cpu')))
 model.eval()
 
