@@ -8,7 +8,7 @@ import io
 import os
 
 # Initialize Flask app
-app = Flask(__name__)
+app = Flask(__name__,template_folder="templates")
 
 # Enable CORS (Cross-Origin Resource Sharing)
 CORS(app)
@@ -48,7 +48,8 @@ class CNNModel(nn.Module):
 
 # Load the trained model
 model = CNNModel()
-model.load_state_dict(torch.load("model.pth", map_location=torch.device('cpu')))
+# model.load_state_dict(torch.load("model.pth", map_location=torch.device('cpu')))
+model.load_state_dict(torch.load("model.pth", weights_only=True, map_location=torch.device('cpu')))
 model.eval()
 
 # Define the image transform
@@ -88,6 +89,6 @@ def predict():
     return jsonify({"class_id": predicted, "class_name": class_names[predicted]})
 
 if __name__ == "__main__":
-    # port = int(os.getenv("PORT", 8000))  # Default port is 8000
-    # app.run(host="0.0.0.0", port=port)
+#     # port = int(os.getenv("PORT", 8000))  # Default port is 8000
+#     # app.run(host="0.0.0.0", port=port)
     app.run(debug=True)
