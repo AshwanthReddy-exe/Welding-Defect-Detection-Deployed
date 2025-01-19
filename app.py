@@ -1,7 +1,7 @@
-from fastapi import FastAPI, File, UploadFile
-from fastapi.responses import HTMLResponse
+from fastapi import FastAPI, File, UploadFile, Request
+from fastapi.responses import HTMLResponse, Response
 from fastapi.staticfiles import StaticFiles
-from fastapi.middleware.cors import CORSMiddleware
+from fastapi.middleware.cors import CORSMiddleware  # Add this import
 import torch
 from torch import nn
 from torchvision import transforms
@@ -52,6 +52,7 @@ class CNNModel(nn.Module):
         x = torch.relu(self.fc1(x))
         x = self.dropout(x)  # Apply dropout
         x = self.fc2(x)
+        # x = torch.sigmoid(x)   not needed as we are using BCEWithLogitsLoss
         return x
 
 # Load the trained model
@@ -68,11 +69,16 @@ transform = transforms.Compose([
 # Serve static files (frontend) under /static path
 app.mount("/static", StaticFiles(directory=".", html=True), name="static")
 
-@app.get("/", response_class=HTMLResponse)
-async def get_index():
-    # Serve the index.html file directly
+@app.api_route("/", methods=["GET", "HEAD"])
+async def get_index(request: Request):
+    # Handle both GET and HEAD requests
     with open("index.html", "r", encoding="utf-8") as f:
-        return f.read()
+        content = f.read()
+    
+    # Return response body for GET and just headers for HEAD
+    if request.method == "HEAD":
+        return Response(headers={"Content-Length": str(len(content))})
+    return HTMLResponse(content=content)
 
 @app.post("/predict/")
 async def predict(file: UploadFile = File(...)):
@@ -89,8 +95,10 @@ async def predict(file: UploadFile = File(...)):
 
     # Determine class based on threshold
     predicted = 1 if output > 0.5 else 0  # 1 = defect, 0 = non-defective
+    # # Map the prediction to class name (you can modify this based on your classes)
     class_names = ["defect", "no_defect"]
     return {"class_id": predicted, "class_name": class_names[predicted]}
+
 
 if __name__ == "__main__":
     port = int(os.getenv("PORT", 8000))  # Render will set this environment variable
