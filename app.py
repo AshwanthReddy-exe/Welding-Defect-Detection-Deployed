@@ -11,7 +11,7 @@ import os
 app = Flask(__name__,template_folder="templates")
 
 # Enable CORS (Cross-Origin Resource Sharing)
-CORS(app)
+CORS(app, resources={r"/*": {"origins": "https://weldingdefectdetection.onrender.com"}})
 
 # Define the CNN Model
 class CNNModel(nn.Module):
