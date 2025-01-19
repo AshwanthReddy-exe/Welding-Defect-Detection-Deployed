@@ -93,7 +93,8 @@ async def predict(file: UploadFile = File(...)):
     class_names = ["defect", "no_defect"]
     return {"class_id": predicted, "class_name": class_names[predicted]}
 
-# Run the FastAPI app
+
+port = int(os.getenv("PORT", 8000))
 if __name__ == "__main__":
     import uvicorn
-    uvicorn.run(app, host="0.0.0.0", port=8000)
+    uvicorn.run(app, host="0.0.0.0", port=port)
