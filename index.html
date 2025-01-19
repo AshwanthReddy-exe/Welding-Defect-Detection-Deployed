@@ -1,0 +1,120 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Welding Defect Detection</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+</head>
+
+<body class="bg-gray-100 flex items-center justify-center h-screen">
+    <div class="bg-white shadow-md rounded-lg p-6 max-w-lg w-full">
+        <h1 class="text-2xl font-bold text-center mb-4">Welding defect Detection Model</h1>
+        <p class="text-gray-500 text-center mb-6">Upload or drag and drop an image to predict its class.</p>
+
+        <!-- Drag and Drop Container -->
+        <div id="drop-zone" class="border-2 border-dashed border-gray-300 rounded-lg p-6 text-center cursor-pointer bg-gray-50">
+            <p class="text-gray-400">Drag and drop your image here</p>
+            <p class="text-gray-400">or</p>
+            <label for="file-input" class="text-blue-500 underline cursor-pointer">click to browse</label>
+            <input id="file-input" type="file" class="hidden" accept="image/*" />
+        </div>
+
+        <!-- Preview Section -->
+        <div id="preview-container" class="mt-4 hidden">
+            <p class="text-gray-500 mb-2">Preview:</p>
+            <img id="preview-image" src="" alt="Preview" class="w-full h-40 object-cover rounded-lg mb-4">
+        </div>
+
+        <!-- Submit Button -->
+        <button id="predict-btn" 
+            class="bg-blue-500 text-white py-2 px-4 rounded-lg w-full mt-4 hover:bg-blue-600 disabled:opacity-50" 
+            disabled>
+            Predict
+        </button>
+
+        <!-- Result -->
+        <div id="result" class="mt-6 text-center text-lg font-semibold text-gray-700 hidden">
+            Predicted Class: <span id="result-class"></span>
+        </div>
+    </div>
+
+    <script>
+        const dropZone = document.getElementById('drop-zone');
+        const fileInput = document.getElementById('file-input');
+        const previewContainer = document.getElementById('preview-container');
+        const previewImage = document.getElementById('preview-image');
+        const predictBtn = document.getElementById('predict-btn');
+        const resultDiv = document.getElementById('result');
+        const resultClass = document.getElementById('result-class');
+
+        let selectedFile = null;
+
+        // Drag and Drop Handlers
+        dropZone.addEventListener('dragover', (e) => {
+            e.preventDefault();
+            dropZone.classList.add('border-blue-500', 'bg-blue-50');
+        });
+
+        dropZone.addEventListener('dragleave', () => {
+            dropZone.classList.remove('border-blue-500', 'bg-blue-50');
+        });
+
+        dropZone.addEventListener('drop', (e) => {
+            e.preventDefault();
+            dropZone.classList.remove('border-blue-500', 'bg-blue-50');
+            selectedFile = e.dataTransfer.files[0];
+            handleFilePreview(selectedFile);
+        });
+
+        // File Input Change Handler
+        fileInput.addEventListener('change', (e) => {
+            selectedFile = e.target.files[0];
+            handleFilePreview(selectedFile);
+        });
+
+        // Handle File Preview
+        function handleFilePreview(file) {
+            if (file && file.type.startsWith('image/')) {
+                const reader = new FileReader();
+                reader.onload = (e) => {
+                    previewImage.src = e.target.result;
+                    previewContainer.classList.remove('hidden');
+                    predictBtn.disabled = false;
+                };
+                reader.readAsDataURL(file);
+            } else {
+                alert('Please upload a valid image file.');
+                resetPreview();
+            }
+        }
+
+        // Reset Preview
+        function resetPreview() {
+            previewContainer.classList.add('hidden');
+            previewImage.src = '';
+            predictBtn.disabled = true;
+        }
+
+        // Predict Button Click Handler
+        predictBtn.addEventListener('click', async () => {
+            if (!selectedFile) return;
+
+            const formData = new FormData();
+            formData.append('file', selectedFile);
+
+            // Call Backend
+            const response = await fetch('http://localhost:8000/predict/', {
+                method: 'POST',
+                body: formData,
+            });
+
+            const result = await response.json();
+            resultClass.textContent = result.class_name;
+            resultDiv.classList.remove('hidden');
+        });
+    </script>
+</body>
+
+</html>
