@@ -8,6 +8,7 @@ from torchvision import transforms
 from PIL import Image
 import io
 import os
+import uvicorn
 
 # Initialize FastAPI app
 app = FastAPI()
@@ -94,7 +95,5 @@ async def predict(file: UploadFile = File(...)):
     return {"class_id": predicted, "class_name": class_names[predicted]}
 
 
-port = int(os.getenv("PORT", 8000))
 if __name__ == "__main__":
-    import uvicorn
-    uvicorn.run(app, host="0.0.0.0", port=port)
+    uvicorn.run(app)
