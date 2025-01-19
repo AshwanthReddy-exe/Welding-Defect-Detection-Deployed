@@ -1,7 +1,7 @@
 from fastapi import FastAPI, File, UploadFile
 from fastapi.responses import HTMLResponse
 from fastapi.staticfiles import StaticFiles
-from fastapi.middleware.cors import CORSMiddleware  # Add this import
+from fastapi.middleware.cors import CORSMiddleware
 import torch
 from torch import nn
 from torchvision import transforms
@@ -52,7 +52,6 @@ class CNNModel(nn.Module):
         x = torch.relu(self.fc1(x))
         x = self.dropout(x)  # Apply dropout
         x = self.fc2(x)
-        # x = torch.sigmoid(x)   not needed as we are using BCEWithLogitsLoss
         return x
 
 # Load the trained model
@@ -90,10 +89,8 @@ async def predict(file: UploadFile = File(...)):
 
     # Determine class based on threshold
     predicted = 1 if output > 0.5 else 0  # 1 = defect, 0 = non-defective
-    # # Map the prediction to class name (you can modify this based on your classes)
     class_names = ["defect", "no_defect"]
     return {"class_id": predicted, "class_name": class_names[predicted]}
-
 
 if __name__ == "__main__":
     port = int(os.getenv("PORT", 8000))  # Render will set this environment variable
